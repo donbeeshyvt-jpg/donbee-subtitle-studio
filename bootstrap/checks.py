@@ -117,7 +117,7 @@ def collect_env(runner=None, which=None, http_get=None, python_version=None, pro
     items = {"python": _item("python", "ok" if version[:2] >= PYTHON_MIN else "outdated", version=".".join(str(part) for part in version[:3]))}
     for name in ("ffmpeg", "ffprobe", "node"):
         path, found = _tool_version(name, "-version" if name in ("ffmpeg", "ffprobe") else "--version", runner, which)
-        items[name] = _item(name, "ok" if path else "missing", version=found, details=dict(path=path) if path else {})
+        items[name] = _item(name, "ok" if path and found else "missing", version=found, details=dict(path=path) if path else {})
     items["gpu"] = _gpu(runner, which)
     items["lmstudio"] = _lmstudio(http_get)
     items["llama_server"] = _llama_server(http_get, which, Path(__file__).resolve().parents[1] if project_root is None else project_root)

@@ -40,6 +40,26 @@ def test_named_launcher_preserves_project_root_and_serve_arguments(tmp_path):
     assert Path(pythonpath) == project / 'src'
 
 
+@pytest.mark.skipif(os.name != 'nt', reason='Windows 批次啟動器')
+def test_launcher_default_enters_setup_and_forwards_confirmed_choices(tmp_path):
+    project = tmp_path / 'first run with spaces'
+    package = project / 'bootstrap'
+    package.mkdir(parents=True)
+    capture = tmp_path / 'setup.json'
+    (package / '__init__.py').write_text('', encoding='utf-8')
+    (package / '__main__.py').write_text(
+        'import os, sys, json\nfrom pathlib import Path\n'
+        'Path(os.environ["LAUNCH_CAPTURE"]).write_text(json.dumps([os.getcwd(), sys.argv[1:]]), encoding="utf-8")\n', encoding='utf-8')
+    copied = project / 'Start-DonBee-Subtitle-Studio.bat'
+    shutil.copyfile(ROOT / copied.name, copied)
+    env = dict(os.environ, LAUNCH_CAPTURE=str(capture), PATH=str(Path(sys.executable).parent) + os.pathsep + os.environ['PATH'])
+    env.pop('STUDIO_MODEL_PYTHON', None)
+    subprocess.run(['cmd.exe', '/d', '/c', str(copied), '--local', '--confirm'], cwd=tmp_path, env=env, check=True, timeout=15)
+    cwd, argv = json.loads(capture.read_text(encoding='utf-8'))
+    assert Path(cwd) == project
+    assert argv == ['--interactive', '--serve', '--local', '--confirm']
+
+
 def test_manual_cli_examples_parse():
     text = (ROOT / "guides/API_CLI.md").read_text(encoding="utf-8")
     commands = re.findall(r"^& \$py -m app (.+)$", text, re.M)

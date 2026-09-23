@@ -215,14 +215,18 @@ def create_app(root=None, start_workers=True):
         if thread is not None and thread.is_alive():
             raise StudioError("DOWNLOAD_IN_PROGRESS", "已有模型複製或下載進行中，請等待完成", 409)
         plan = model_store.plan_download(manifest, app_config.MODELS_DIR, include_optional=True, only=body.ids)
-        state = dict(status="running", ids=list(body.ids), started_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        state = dict(download_id=os.urandom(12).hex(), status="running", ids=list(body.ids), started_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                      events=[], results=None, error=None, finished_at=None)
         app.state.model_download = state
+
+        def progress(event):
+            state['events'].append(event)
+            del state['events'][:-100]  # 高頻進度只保留最近 100 筆，避免長下載無界成長
 
         def worker():
             # 在服務內背景執行；金鑰無關；失敗只記錄型別，不外洩下載回應全文
             try:
-                result = model_store.run_download(plan, progress=lambda event: state["events"].append(event))
+                result = model_store.run_download(plan, progress=progress)
                 state.update(status="done", results=result["items"], finished_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
             except Exception as error:
                 state.update(status="failed", error=type(error).__name__, finished_at=datetime.now(timezone.utc).isoformat(timespec="seconds"))
@@ -230,7 +234,7 @@ def create_app(root=None, start_workers=True):
         thread = threading.Thread(target=worker, name="model-download", daemon=True)
         app.state.model_download_thread = thread
         thread.start()
-        return {"status": state["status"], "ids": state["ids"], "plan": [dict(id=item["id"], action=item["action"], bytes=item.get("bytes", 0)) for item in plan["items"]]}
+        return {"download_id": state['download_id'], "status": state["status"], "ids": state["ids"], "plan": [dict(id=item["id"], action=item["action"], bytes=item.get("bytes", 0)) for item in plan["items"]]}
 
     @app.get("/v1/capabilities")
     def capabilities():

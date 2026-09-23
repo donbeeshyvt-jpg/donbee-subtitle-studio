@@ -1,0 +1,2 @@
+# Windows 啟動器必須使用 CRLF，避免 cmd.exe 對標籤／多位元組註解解析錯誤。
+*.bat text eol=crlf

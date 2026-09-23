@@ -15,7 +15,9 @@ def missing_models(manifest, models_dir, include_optional=False):
         if not entry.get("required", True) and not include_optional:
             continue
         snapshots = models_dir / "hf" / repo_folder(entry["repo"]) / "snapshots"
-        if not snapshots.is_dir() or not any(child.is_dir() and any(child.iterdir()) for child in snapshots.iterdir()):
+        required = entry.get('required_files', [])
+        if not snapshots.is_dir() or not any(child.is_dir() and any(child.iterdir()) and
+                all((child / name).is_file() and (child / name).stat().st_size > 0 for name in required) for child in snapshots.iterdir()):
             missing.append("hf:" + entry["repo"])
     for entry in manifest.get("torch", []):
         if not entry.get("required", True) and not include_optional:

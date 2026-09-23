@@ -5,6 +5,8 @@
 | Path | Responsibility (EN) | 職責（繁中） |
 |---|---|---|
 | `Start-DonBee-Subtitle-Studio.bat`、`bootstrap/` | Launcher and environment checks | 啟動本機工作臺、依賴檢查及專案環境準備 |
+| `bootstrap/local_setup.py`、`setup_support.py`、`process.py` | First-run local setup | 確認安裝、winget／下載器、WhisperX 核心匯入、large-v3 優先準備、動態進度與子程序期限 |
+| `src/app/studio/model_store.py` | Model installation and progress | 必要檔檢查、下載與匯入；HF 檔案數／直接下載位元組；CLI 等待模型端點、服務健康後才開瀏覽器 |
 | `src/app/__main__.py`、`src/app/studio/cli.py` | HTTP CLI | `python -m app`；CLI 與網頁共用 API |
 | `src/app/studio/api.py`、`contracts.py` | API and request schemas | `/v1` 路由、驗證、工作提交與內容存取 |
 | `src/app/studio/coordinator.py`、`store.py`、`worker.py` | Durable jobs and workers | 排程、SQLite、版本、子程序與成果 |

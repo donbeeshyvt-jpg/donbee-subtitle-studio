@@ -152,6 +152,8 @@ API 對應 `POST /v1/projects/{p}/plans`、`POST /v1/plans/{plan_id}/run`。目�
 
 ## 7. 進度、重試與錯誤
 
+模型安裝不是一般 job。`models download --ids hf:Systran/faster-whisper-large-v3 --confirm --wait --json` 透過 `/v1/models/status` 輪詢，stderr 即時顯示下載階段／數量，stdout 留最後 JSON；`download_id` 用於識別該次下載。檔案數不是位元組百分比。只有所有結果成功才回 0；逾時不取消伺服器下載，用 `models status --json` 查現況。尚未有環境／服務時，用 [SETUP](SETUP.md) 的 bootstrap 本機方案。
+
 提交長工作回 202，之後輪詢 `GET /v1/jobs/{id}` 或訂閱 `/v1/jobs/{id}/events`。CLI：
 
 ```powershell

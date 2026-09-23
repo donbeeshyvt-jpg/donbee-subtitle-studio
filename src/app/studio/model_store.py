@@ -151,6 +151,16 @@ def _hf_present(folder):
     return snapshots.is_dir() and any(child.is_dir() and any(child.iterdir()) for child in snapshots.iterdir())
 
 
+def _hf_complete(folder, entry):
+    snapshots = Path(folder) / 'snapshots'
+    required = entry.get('required_files', [])
+    if not snapshots.is_dir():
+        return False
+    candidates = [snapshots / entry['revision']] if entry.get('revision') else list(snapshots.iterdir())
+    return any(child.is_dir() and any(child.iterdir()) and
+               all((child / name).is_file() and (child / name).stat().st_size > 0 for name in required) for child in candidates)
+
+
 def check_models(manifest, models_dir, include_optional=False):
     """每個模型的狀態：present／missing／size_mismatch／revision_mismatch／skipped_optional；不連網。
     大小與 revision 依 manifest 指定或 IMPORTED.json 的匯入紀錄比對。"""
@@ -159,7 +169,7 @@ def check_models(manifest, models_dir, include_optional=False):
     items = []
     for entry in manifest.get("hf", []):
         repo, required = entry["repo"], entry.get("required", True)
-        item = dict(id="hf:" + repo, kind="hf", repo=repo, required=required)
+        item = dict(id="hf:" + repo, kind="hf", repo=repo, required=required, required_files=entry.get('required_files', []))
         if not required and not include_optional:
             item["status"] = "skipped_optional"
         else:
@@ -171,7 +181,9 @@ def check_models(manifest, models_dir, include_optional=False):
                 actual = hf_revision(folder)
                 expected = entry.get("revision") or record.get("revision")
                 size = tree_size(folder)
-                if record.get("bytes") and size < record["bytes"]:
+                if entry.get('required_files') and not _hf_complete(folder, entry):
+                    item['status'] = 'missing'
+                elif record.get("bytes") and size < record["bytes"]:
                     item["status"] = "size_mismatch"
                 elif expected and actual and actual != expected:
                     item["status"] = "revision_mismatch"
@@ -242,7 +254,7 @@ def plan_download(manifest, models_dir, *, source_hf=None, source_torch=None, in
         if item["kind"] == "hf":
             source = source_hf / repo_folder(item["repo"])
             target = models_dir / "hf" / repo_folder(item["repo"])
-            if source.is_dir() and _hf_present(source):
+            if source.is_dir() and _hf_complete(source, entry):
                 size = tree_size(source)
                 items.append(dict(item, action="copy", source=str(source), target=str(target), bytes=size, revision=hf_revision(source)))
                 total += size
@@ -265,14 +277,26 @@ def plan_download(manifest, models_dir, *, source_hf=None, source_torch=None, in
     return dict(models_dir=str(models_dir), items=items, total_bytes=total)
 
 
-def _default_hf_download(repo, cache_dir, revision=None):
-    from huggingface_hub import snapshot_download
-    snapshot_download(repo_id=repo, cache_dir=str(cache_dir), revision=revision)
+def _download_progress(progress):
+    """HF snapshot 的 tqdm 計數是檔案，不冒充位元組；保留 SDK 自己的下載輸出。"""
+    from tqdm.auto import tqdm
+    class ModelProgress(tqdm):
+        def display(self, *args, **kwargs):
+            result = super().display(*args, **kwargs)
+            if progress:
+                progress(dict(files_done=self.n, files_total=self.total))
+            return result
+    return ModelProgress
 
 
-def _default_ct2_download(repo, local_dir, revision=None, allow_patterns=None):
+def _default_hf_download(repo, cache_dir, revision=None, progress=None):
     from huggingface_hub import snapshot_download
-    snapshot_download(repo_id=repo, revision=revision, local_dir=str(local_dir), allow_patterns=allow_patterns)
+    snapshot_download(repo_id=repo, cache_dir=str(cache_dir), revision=revision, tqdm_class=_download_progress(progress))
+
+
+def _default_ct2_download(repo, local_dir, revision=None, allow_patterns=None, progress=None):
+    from huggingface_hub import snapshot_download
+    snapshot_download(repo_id=repo, revision=revision, local_dir=str(local_dir), allow_patterns=allow_patterns, tqdm_class=_download_progress(progress))
 
 
 def _default_ct2_convert(source, target, quantization):
@@ -303,7 +327,10 @@ def _convert_ct2(item, models_dir, download, convert, tokenizer, progress=None):
         shutil.rmtree(staging)  # 上次失敗留下的半成品（本程式自己建立的暫存）
     if progress:
         progress(dict(id=item["id"], stage="download", bytes_total=item.get("bytes", 0)))
-    download(item["repo"], source, revision=item.get("revision"), allow_patterns=list(CT2_SOURCE_PATTERNS))
+    kwargs = dict(revision=item.get('revision'), allow_patterns=list(CT2_SOURCE_PATTERNS))
+    if download is _default_ct2_download:
+        kwargs['progress'] = (lambda event: progress(dict(event, id=item['id'], stage='download'))) if progress else None
+    download(item["repo"], source, **kwargs)
     if progress:
         progress(dict(id=item["id"], stage="convert"))
     try:
@@ -353,6 +380,8 @@ def _default_file_download(url, target, progress=None):
             done += len(chunk)
             if progress:
                 progress(dict(bytes_done=done, bytes_total=total))
+        if total and done != total:
+            raise ValueError('DOWNLOAD_SIZE_MISMATCH')
     from .fsutil import replace_with_retry
     replace_with_retry(staging, target)  # 幾 GB 的下載不能敗在最後一步改名被防毒占用
 
@@ -401,9 +430,12 @@ def run_download(plan, hf_download=None, file_download=None, progress=None, ct2_
                 imported.setdefault("torch", {})[item["file"]] = dict(bytes=copied, source=str(source), imported_at=stamp())
             status = "copied" if copied >= item.get("bytes", 0) else "size_mismatch"
         elif item["kind"] == "hf":
-            hf_download(item["repo"], models_dir / "hf", revision=item.get("revision"))
+            kwargs = dict(revision=item.get('revision'))
+            if hf_download is _default_hf_download:
+                kwargs['progress'] = (lambda event: progress(dict(event, id=item['id'], stage='download'))) if progress else None
+            hf_download(item["repo"], models_dir / "hf", **kwargs)
             folder = models_dir / "hf" / repo_folder(item["repo"])
-            if _hf_present(folder):
+            if _hf_complete(folder, item):
                 imported.setdefault("hf", {})[item["repo"]] = dict(revision=hf_revision(folder), bytes=tree_size(folder), source="download", imported_at=stamp())
                 status = "downloaded"
         elif item["kind"] == "torch":
@@ -412,6 +444,8 @@ def run_download(plan, hf_download=None, file_download=None, progress=None, ct2_
             if target.is_file() and target.stat().st_size > 0:
                 imported.setdefault("torch", {})[item["file"]] = dict(bytes=target.stat().st_size, source="download", imported_at=stamp())
                 status = "downloaded"
+        if item['kind'] == 'hf' and status == 'copied' and not _hf_complete(Path(item['target']), item):
+            status = 'failed'
         if progress:
             progress(dict(id=item["id"], stage="done", status=status))
         results.append(dict(item, status=status))

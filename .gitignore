@@ -1,5 +1,6 @@
 /*
 !/.gitignore
+!/.gitattributes
 !/.env.example
 !/README.md
 !/README.en.md

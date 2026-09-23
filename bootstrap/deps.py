@@ -65,5 +65,6 @@ def run_pip(argv, runner=None):
     """執行 pip；輸出導向 stderr（stdout 保留給 JSON 報告），失敗拋例外。"""
     if runner:
         return runner(argv, timeout=3600)
-    subprocess.run(argv, check=True, stdout=sys.stderr)
+    from .process import run_visible
+    run_visible([*argv, '--progress-bar', 'on'], label='Python 套件')
     return ""

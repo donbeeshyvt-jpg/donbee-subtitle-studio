@@ -1,9 +1,9 @@
-"""啟動流程：環境檢查 → .venv 與套件只補缺 → 模型比對 → JSON 回報；全部齊備時走快速路徑（不呼叫 pip、不連網）。
+"""啟動流程：檢查與說明 → 確認 → 安裝 → 本機模型準備 → 重檢 → 服務健康檢查。
 
 用法（專案根，系統 Python 3.12）：
-  python -m bootstrap                 檢查並補齊套件（需要時建立 .venv）
+  python -m bootstrap --interactive   檢查、詢問方案與安裝同意
   python -m bootstrap --check-only    只檢查、不安裝
-  python -m bootstrap --serve         補齊後以 .venv 啟動網頁服務
+  python -m bootstrap --local --confirm --serve  準備本機方案後啟動
   python -m bootstrap --groups core,models,dev --json
 """
 import argparse
@@ -15,9 +15,11 @@ import subprocess
 import sys
 
 from . import checks, deps, lockfile, models, venv
+from . import setup_support
+from .process import run_visible
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_GROUPS = ("core", "models", "dev")
+DEFAULT_GROUPS = ("core", "models")
 
 
 def data_dir(root):
@@ -27,7 +29,8 @@ def data_dir(root):
 
 def models_dir(root):
     override = os.environ.get("STUDIO_MODELS_DIR")
-    return Path(override) if override else Path(root) / "models"
+    value = Path(override) if override else Path('models')
+    return value if value.is_absolute() else Path(root) / value
 
 
 def build_plan(entries, state):
@@ -60,6 +63,7 @@ def collect_state(root, groups, include_optional_models=False):
     manifest_path = Path(root) / "models.manifest.json"
     missing = models.missing_models(models.load_manifest(manifest_path), models_dir(root), include_optional_models) if manifest_path.is_file() else []
     return dict(env=env, python_ok=python_ok, venv_ok=ok, venv_python=str(python), installed=installed, tools_missing=tools_missing,
+                downloader_ready=setup_support.downloader_ready(root),
                 models_missing=missing, gpu_available=env["items"]["gpu"]["status"] == "ok", groups=groups)
 
 
@@ -115,7 +119,7 @@ def execute(plan, root, state, entries, check_only=False, log=print):
             log(f"[{action['tool']}] {action['guidance']}")
             results.append(dict(action, status="guided"))
         elif action["kind"] == "models":
-            log("缺少模型：" + ", ".join(action["missing"]) + "（M0-P3 起可自動下載；目前請執行 scripts/import-local-models.py 或手動放入 models/）")
+            log("缺少模型：" + ", ".join(action["missing"]) + "（選 --local --confirm 準備必要本機模型；或透過 models download 選個別模型）")
             results.append(dict(action, status="reported"))
     return results
 
@@ -135,6 +139,16 @@ def serve(python, root, extra_args):
     return subprocess.call(argv, cwd=str(root), env=env)
 
 
+def prepare_local(python, root):
+    env = dict(os.environ, PYTHONPATH=str(Path(root) / 'src'), PYTHONUNBUFFERED='1')
+    try:
+        run_visible([str(python), '-m', 'bootstrap.local_setup', '--models-dir', str(models_dir(root).resolve()), '--confirm'],
+                    cwd=str(root), env=env, timeout=14400, label='本機模型準備')
+        return 0
+    except (OSError, subprocess.SubprocessError):
+        return 1
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="冬比字幕工作室啟動自檢")
     parser.add_argument("--check-only", action="store_true", help="只檢查不安裝")
@@ -143,17 +157,98 @@ def main(argv=None):
     parser.add_argument("--include-optional-models", action="store_true")
     parser.add_argument("--json", action="store_true", help="以 JSON 輸出報告")
     parser.add_argument("--root", default=str(ROOT))
+    parser.add_argument('--local', action='store_true', help='安裝 WhisperX 核心並準備 large-v3 與必要本機模型')
+    parser.add_argument('--confirm', action='store_true', help='已同意套件安裝、版本調整與模型下載')
+    parser.add_argument('--interactive', action='store_true', help='顯示安裝計畫並詢問本機方案與安裝授權')
+    parser.add_argument('--install-tools', action='store_true', help='確認後用 winget 補裝 FFmpeg／Node')
+    parser.add_argument('--estimate-download', action='store_true', help='只查官方模型檔案大小（需連網），未知大小保留 null')
     args, extra = parser.parse_known_args(argv)
-    root = Path(args.root)
+    root = Path(args.root).resolve()
+    if not (args.confirm or args.check_only or args.interactive):
+        print('先以 --local --check-only 查看缺件；確認後加 --confirm，或使用 --interactive。', file=sys.stderr)
+        return 2
     groups = tuple(part.strip() for part in args.groups.split(",") if part.strip())
     entries = lockfile.load_lock(root / "requirements.lock")
     state = collect_state(root, groups, args.include_optional_models)
-    plan = build_plan(entries, state)
     log = (lambda *parts: print(*parts, file=sys.stderr)) if args.json else print
-    results = execute(plan, root, state, entries, check_only=args.check_only, log=log)
+    if args.interactive and not args.check_only and not args.confirm:
+        if not sys.stdin.isatty():
+            log('非互動終端請先 --check-only，再明確指定 --local --confirm（需要系統安裝另加 --install-tools）。')
+            return 2
+        choice = input('選擇：1 本機轉錄（WhisperX + large-v3 + 必要模型）；2 工作台與套件（略過模型權重）；0 取消 [1/2/0]：').strip()
+        if choice not in ('1', '2'):
+            return 2
+        args.local = choice == '1'
+        setup_support.describe(state, root, args.local, log)
+        if args.local:
+            for item in setup_support.estimate_models(root, state['models_missing']):
+                log(item['id'] + '：' + ('約 %.2f GiB' % (item['download_bytes'] / 2**30) if item['download_bytes'] else '下載量未知'))
+        if input('同意上述套件安裝／版本調整與所選模型下載？[y/N]：').strip().lower() != 'y':
+            return 2
+        args.confirm = True
+        if state['tools_missing']:
+            args.install_tools = input('另外同意透過 winget 安裝缺少的 FFmpeg／Node？[y/N]：').strip().lower() == 'y'
+    elif args.local or args.install_tools:
+        setup_support.describe(state, root, args.local, log)
+    if args.estimate_download:
+        state['download_estimates'] = setup_support.estimate_models(root, state['models_missing'])
+        for item in state['download_estimates']:
+            log(json.dumps(item, ensure_ascii=False))
+    if not args.check_only:
+        if args.local:
+            base = models_dir(root).resolve()
+            for name, target in [('HF_HUB_CACHE', base / 'hf'), ('TORCH_HOME', base / 'torch')]:
+                if os.environ.get(name) and Path(os.environ[name]).resolve() != target:
+                    log(name + ' 與模型目錄不一致；先確認設定，不進行安裝。')
+                    return 2
+        if not state['python_ok']:
+            log(checks.GUIDANCE['python'])
+            return 2
+        if args.serve:
+            # 不在服務仍執行時安裝或替換它正在使用的套件；不停止其他程序。
+            import socket
+            port = int(extra[extra.index('--port') + 1]) if '--port' in extra else 8765
+            try:
+                with socket.create_connection(('127.0.0.1', port), timeout=1):
+                    log(f'連接埠 {port} 已使用；請先確認既有服務，不進行安裝或啟動第二份。')
+                    return 2
+            except OSError:
+                pass
+        if state['tools_missing'] and args.install_tools and args.confirm:
+            try:
+                setup_support.install_tools(state['tools_missing'])
+                state = collect_state(root, groups, args.include_optional_models)
+            except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+                log('系統工具安裝失敗：' + type(error).__name__ + '；請依指引安裝後重開終端。')
+                return 1
+        if state['tools_missing'] and (args.local or args.serve):
+            for name in state['tools_missing']:
+                log(checks.GUIDANCE[name])
+            return 2
+        if args.local and 'models' not in groups:
+            log('本機方案必須包含 --groups core,models。')
+            return 2
+    plan = build_plan(entries, state)
+    try:
+        results = execute(plan, root, state, entries, check_only=args.check_only, log=log)
+        if not args.check_only and (args.local or args.serve):
+            setup_support.prepare_downloader(root)
+            refreshed = collect_state(root, groups, args.include_optional_models)
+            if not refreshed['venv_ok'] or refreshed['tools_missing'] or deps.plan_installs(entries, refreshed['installed'], groups):
+                log('安裝後重檢未通過；請檢查缺件與版本衝突，不啟動工作台。')
+                return 1
+            state = refreshed
+            if args.local and prepare_local(state['venv_python'], root):
+                return 1
+            if args.local:
+                state = collect_state(root, groups, args.include_optional_models)
+    except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+        log('安裝失敗：' + type(error).__name__ + '；未啟動工作台。')
+        return 1
     report = dict(checked_at=datetime.now(timezone.utc).isoformat(timespec="seconds"), fast_path=plan["fast_path"], network_needed=plan["network_needed"],
                   environment=state["env"], venv_python=state["venv_python"], groups=list(groups), tools_missing=state["tools_missing"],
-                  models_missing=state["models_missing"], actions=results)
+                  models_missing=state["models_missing"], actions=results, local_selected=args.local,
+                  download_estimates=state.get('download_estimates'), downloader_ready=state.get('downloader_ready'))
     write_report(root, report)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=1))

@@ -420,6 +420,28 @@ class Session:
         if getattr(self.args,'wait',False): return self.wait(data)
         return data,0
 
+    def wait_models(self, started):
+        """模型下載不是 coordinator job；輪詢模型端點，進度只輸出 stderr。"""
+        deadline = time.monotonic() + getattr(self.args, 'wait_timeout', 3600)
+        identity = started.get('download_id')
+        while True:
+            if time.monotonic() >= deadline:
+                raise CLIError('WAIT_TIMEOUT', '停止等待，伺服器模型下載仍繼續；請查 models status', 5)
+            report = self.request('GET', '/models/status', timeout=min(30, max(.001, deadline-time.monotonic())))
+            state = report.get('download')
+            if not state or (identity and state.get('download_id') != identity):
+                raise CLIError('DOWNLOAD_STATE_LOST', '下載狀態已重設或被另一筆取代；請查 models status', 3)
+            events = state.get('events') or []
+            print(json.dumps(dict(status=state.get('status'), progress=events[-1] if events else None), ensure_ascii=False), file=sys.stderr, flush=True)
+            if state.get('status') == 'failed':
+                return state, 3
+            if state.get('status') == 'done':
+                results = state.get('results')
+                ok = (isinstance(results, list) and set(started.get('ids', [])) <= {item.get('id') for item in results}
+                      and all(item.get('status') in ('present', 'downloaded', 'copied', 'converted') for item in results))
+                return state, 0 if ok else 3
+            time.sleep(min(getattr(self.args, 'poll_interval', .5), max(0, deadline-time.monotonic())))
+
 
 def _apply_corrections(session,project,args,job):
     """校字完成後：高信心修正一次寫進逐字稿（與網頁「直接套用」相同），低信心與拒絕項留在輸出供人工決定。"""
@@ -555,7 +577,8 @@ def _dispatch(args,session):
     if command=='models':
         if action=='status': return session.request('GET','/models/status'),0
         if not args.confirm: raise CLIError('CONFIRMATION_REQUIRED','請加 --confirm 確認所需磁碟空間與下載時間後再開始')
-        return session.request('POST','/models/download',json={'ids':args.ids,'confirm':True}),0
+        started = session.request('POST','/models/download',json={'ids':args.ids,'confirm':True})
+        return session.wait_models(started) if getattr(args, 'wait', False) else (started, 0)
     if command=='asset': return session.request('GET','/assets/'+identity+('' if action=='get' else '/'+action)),0
     if command=='artifact':
         if action=='info': return session.request('GET','/artifacts/'+identity),0
@@ -593,6 +616,27 @@ def _dispatch(args,session):
     raise CLIError('UNKNOWN_COMMAND','尚無此命令')
 
 
+def _open_when_ready(url, stop, timeout=60):
+    """HTTP 健康與工作台頁面都通過後才開瀏覽器；不是模型推論驗收。"""
+    deadline = time.monotonic() + timeout
+    with httpx.Client(timeout=2, trust_env=False) as client:
+        while not stop.is_set() and time.monotonic() < deadline:
+            try:
+                health = client.get(url + '/v1/health')
+                body = health.json() if health.is_success else {}
+                page = client.get(url + '/v2/')
+                if body.get('status') == 'ok' and body.get('name') == '冬比字幕工作室' and page.is_success and 'text/html' in page.headers.get('content-type', ''):
+                    print('工作台健康檢查通過：' + url + '/v2/', file=sys.stderr, flush=True)
+                    webbrowser.open(url + '/v2/')
+                    return True
+            except (httpx.HTTPError, ValueError):
+                pass
+            stop.wait(.5)
+    if not stop.is_set():
+        print('工作台未於期限內通過健康檢查；未開啟瀏覽器，請查看服務錯誤。', file=sys.stderr, flush=True)
+    return False
+
+
 def main(argv=None,*,client=None):
     session=None
     try:
@@ -609,11 +653,15 @@ def main(argv=None,*,client=None):
                 raise CLIError(Coordinator.ALREADY_RUNNING[0],Coordinator.ALREADY_RUNNING[1],3)
             import uvicorn
             app=create_app(args.data_dir)
+            stop = threading.Event()
             if args.open_browser:
                 host='[::1]' if args.host=='::1' else args.host
-                timer=threading.Timer(1,webbrowser.open,args=(f'http://{host}:{args.port}',))
+                timer=threading.Thread(target=_open_when_ready,args=(f'http://{host}:{args.port}',stop))
                 timer.daemon=True; timer.start()
-            uvicorn.run(app,host=args.host,port=args.port)
+            try:
+                uvicorn.run(app,host=args.host,port=args.port)
+            finally:
+                stop.set()
             return 0
         session=Session(args,client)
         result,code=_dispatch(args,session)

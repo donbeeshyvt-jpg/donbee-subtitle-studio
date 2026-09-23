@@ -31,9 +31,9 @@ Original media is preserved. Media exports avoid name collisions; subtitle and t
 
 ## Before you start
 
-The primary environment is Windows with Python 3.12, FFmpeg (including ffprobe), and Node.js. The launcher creates a project Python environment and installs dependencies when required. Prepare model weights separately, and check GPU compatibility and available memory.
+The primary environment is Windows with Python 3.12, FFmpeg (including ffprobe), and Node.js. The launcher checks requirements, shows installation locations and available download-size estimates, then asks for consent. The local option prepares WhisperX and Whisper large-v3 first, followed by draft, alignment and classification models under the project's `models/` directory. GPU compatibility and available memory still matter.
 
-YouTube acquisition also needs a yt-dlp environment. Follow the [setup guide](guides/SETUP.md) before your first download. LM Studio is optional and must be running with a model loaded if selected.
+Setup also prepares an isolated yt-dlp environment. The CLI streams installation stages and model-download progress. After rechecking, it opens the browser only when the service health endpoint and workbench page are available. See the [setup guide](guides/SETUP.md) for commands and limitations. LM Studio is optional and must be running with a model loaded if selected.
 
 Media, model weights, credentials and private development records are not included. Only download and process media you are authorized to use.
 
@@ -51,7 +51,7 @@ React / TypeScript powers the interface, Python / FastAPI the backend, yt-dlp re
 
 ## One-click launch
 
-After first-time setup, double-click **`Start-DonBee-Subtitle-Studio.bat`** in the project folder. It starts the local service and opens your browser:
+Double-click **`Start-DonBee-Subtitle-Studio.bat`** in the project folder and confirm your setup choices. Once ready, it starts the local service, checks availability and opens your browser:
 
 [Open DonBee Subtitle Studio](http://127.0.0.1:8765/v2/)
 

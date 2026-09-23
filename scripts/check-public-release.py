@@ -4,7 +4,7 @@ from pathlib import PurePosixPath
 import re
 import subprocess
 
-ROOT_FILES = {".gitignore", ".env.example", "README.md", "README.en.md", "AGENTS.md",
+ROOT_FILES = {".gitignore", ".gitattributes", ".env.example", "README.md", "README.en.md", "AGENTS.md",
               "THIRD_PARTY_NOTICES.md", "requirements.lock", "requirements-studio.txt",
               "models.manifest.json", "Start-DonBee-Subtitle-Studio.bat"}
 SCRIPT_FILES = {"scripts/check-public-release.py", "scripts/import-local-models.py",

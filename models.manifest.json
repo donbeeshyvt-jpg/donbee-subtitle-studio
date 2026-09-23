@@ -4,6 +4,7 @@
   "hf": [
     {
       "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+      "required_files": ["config.json", "model.bin", "tokenizer.json"],
       "required": true,
       "used_by": [
         "draft ASR (turbo)"
@@ -13,6 +14,7 @@
     },
     {
       "repo": "Systran/faster-whisper-large-v3",
+      "required_files": ["config.json", "model.bin", "tokenizer.json"],
       "required": true,
       "used_by": [
         "refine engine A (large-v3)"
