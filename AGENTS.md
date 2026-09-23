@@ -10,7 +10,7 @@
 4. 一鍵開啟：`Start-DonBee-Subtitle-Studio.bat` → `http://127.0.0.1:8765/v2/`。
 5. CLI：在根目錄設定 `PYTHONPATH=src`，使用專案 `.venv` 的 Python 執行 `-m app --help`。CLI 與網頁共用正在執行的 `/v1` API，不要直接寫資料庫。
 6. 首次先照 SKILL／SETUP：系統 Python 跑 `python -m bootstrap --local --check-only --json`，說明缺件與下載量、獲准後協助安裝與重檢。不要假設 `.venv`／API 已存在。服務健康及網頁通過後再 `doctor --env --json`、查模型／provider 狀態，建立專案、來源、工作。以實際回傳 ID 串接。
-7. 使用遠端／付費模型、傳送音訊或文字、大型模型下載須先有使用者同意。金鑰只放後端環境或本機 secrets，不貼到對話、不印到 log。
+7. 使用遠端／付費模型、傳送音訊或文字、大型模型下載須先有使用者同意。API 金鑰請使用者自己在前端「模型設定 → 文字模型供應者」填寫並按「儲存金鑰」，看到「已存金鑰」再測試連線；agent 等儲存完成才繼續，不代填、不索取對話／截圖金鑰、不改走 CLI 或直接寫 secrets。金鑰不印到 log。
 
 ## 修改程式
 

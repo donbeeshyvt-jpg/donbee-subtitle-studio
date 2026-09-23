@@ -45,6 +45,8 @@
 
 這些都是選用服務。金鑰由你自己保管，遠端處理會送出對應音訊或文字，也可能產生費用。
 
+取得 API 金鑰後，請自己到前端「模型設定 → 文字模型供應者」填入，按「儲存金鑰」，看到「已存金鑰」再按「測試連線」。別只填好忘了存，也不用把金鑰交給 agent；它會等你儲存完成再繼續。
+
 ## 用了哪些程式？
 
 網頁用 React／TypeScript，後端用 Python／FastAPI；yt-dlp 負責解析下載來源，FFmpeg 處理影音，語音辨識串接 WhisperX／faster-whisper 等工具。部分時間軸與片段操作改寫自 LosslessCut，並不是完整的 LosslessCut。授權與來源見[第三方通知](THIRD_PARTY_NOTICES.md)。

@@ -45,6 +45,8 @@ Media, model weights, credentials and private development records are not includ
 
 All are optional. Remote processing sends the relevant audio or text to the provider and may incur charges. Keep your keys private.
 
+Enter your API key yourself in the frontend: **模型設定 (Model settings) → 文字模型供應者 (Providers)**. Click **儲存金鑰 (Save key)**, confirm **已存金鑰 (Key saved)**, then test the connection. Typing without saving is not enough. Do not send the key to the agent; it waits until you have saved it before continuing.
+
 ## Under the hood
 
 React / TypeScript powers the interface, Python / FastAPI the backend, yt-dlp resolves download sources, and FFmpeg handles media. ASR integrates tools such as WhisperX / faster-whisper. Some timeline and segment controls are adapted from LosslessCut; this is not the complete LosslessCut application. See [third-party notices](THIRD_PARTY_NOTICES.md).

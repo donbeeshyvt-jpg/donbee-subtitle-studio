@@ -24,6 +24,8 @@ $py = '.\.venv\Scripts\python.exe'
 
 CLI 預設讀 `data/config.json` 的 token；自訂資料目錄須同時設定 `STUDIO_DATA_DIR` 或用 `--config` 指向同一服務的設定檔。可用 `--api-url http://127.0.0.1:8765` 覆寫網址。不要把 token 放在命令列或對話裡。
 
+外部服務的 API 金鑰與上述本機連線 token 不同。即使用 CLI 操作，也請使用者先在前端「模型設定 → 文字模型供應者」自行填寫，按「儲存金鑰」，確認「已存金鑰」後測試連線；需要模型名稱時另按「儲存模型」。Agent 等使用者儲存完成才繼續，不索取或代填金鑰，也不引導透過命令列／直接寫 secrets 代替前端儲存。
+
 原生 HTTP 的連線範例（變數不印出）：
 
 ```powershell
