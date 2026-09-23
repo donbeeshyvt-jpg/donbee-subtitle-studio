@@ -4,7 +4,7 @@
 
 ## 1. 啟動與驗證
 
-完成 [SETUP](SETUP.md) 後雙擊 `run_v2.bat`，或在已準備好的環境執行：
+完成 [SETUP](SETUP.md) 後雙擊 `Start-DonBee-Subtitle-Studio.bat`，或在已準備好的環境執行：
 
 ```powershell
 $env:PYTHONPATH = 'src'

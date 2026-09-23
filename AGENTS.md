@@ -7,14 +7,14 @@
 1. 產品介紹：[README.md](README.md)；首次準備：[guides/SETUP.md](guides/SETUP.md)。
 2. 操作技能：[.agents/skills/subtitle-studio/SKILL.md](.agents/skills/subtitle-studio/SKILL.md)。
 3. 完整對接手冊：[guides/API_CLI.md](guides/API_CLI.md)。
-4. 一鍵開啟：`run_v2.bat` → `http://127.0.0.1:8765/v2/`。
+4. 一鍵開啟：`Start-DonBee-Subtitle-Studio.bat` → `http://127.0.0.1:8765/v2/`。
 5. CLI：在根目錄設定 `PYTHONPATH=src`，使用專案 `.venv` 的 Python 執行 `-m app --help`。CLI 與網頁共用正在執行的 `/v1` API，不要直接寫資料庫。
 6. 先 `doctor --json`、查模型／provider 狀態，再建立專案、來源、工作。以實際回傳 ID 串接，等待工作成功後取得 artifact。
 7. 使用遠端／付費模型、傳送音訊或文字、大型模型下載須先有使用者同意。金鑰只放後端環境或本機 secrets，不貼到對話、不印到 log。
 
 ## 修改程式
 
-先讀 [guides/CODE_MAP.md](guides/CODE_MAP.md) 定位 1–3 個相關模組；公開 clone 不需要私有開發紀錄就能啟動與操作。
+先讀 [guides/CODE_MAP.md](guides/CODE_MAP.md) 的程式地圖與開發指南，定位 1–3 個相關模組；包含架構、開發伺服器、測試與契約同步規則。公開 clone 不需要私有開發紀錄就能啟動、操作或修改程式。
 
 如果本機已有 `docs/`，開發前依序讀 `00_AI_CONTEXT_INDEX.md`、`HANDOFF.md`、`TASKS.md`、`TODO_RESUME.md`、`PROVIDER_PLAN.md`、`CODE_INDEX.md`、`CONVERSATION_LOG.md` 的 Active Summary 與 `REQUEST_LOG.md`。讀到能說明目的、目前任務、下一步與禁改清單就停。歷史文件不作現行授權。
 

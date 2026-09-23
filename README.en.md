@@ -1,10 +1,10 @@
-# Donbee Subtitle Studio
+# DonBee Subtitle Studio
 
 [繁體中文](README.md) · [Setup guide (Traditional Chinese)](guides/SETUP.md) · [API / CLI guide](guides/API_CLI.md)
 
 Downloading a clip, finding the right moments and adding subtitles should not require hopping between several tools.
 
-Dongbi Subtitle Studio puts those steps in one local browser workspace. Paste a YouTube link, choose time ranges and an output folder, then transcribe, correct, edit and export. You can also import your own video or audio and start with subtitles.
+DonBee Subtitle Studio puts those steps in one local browser workspace. Paste a YouTube link, choose time ranges and an output folder, then transcribe, correct, edit and export. You can also import your own video or audio and start with subtitles.
 
 This is the first public code snapshot, **v2.0.0-preview.1**. “v2” identifies the web workbench; “preview” means it is not yet validated for every use case.
 
@@ -51,8 +51,8 @@ React / TypeScript powers the interface, Python / FastAPI the backend, yt-dlp re
 
 ## One-click launch
 
-After first-time setup, double-click **`run_v2.bat`** in the project folder. It starts the local service and opens your browser:
+After first-time setup, double-click **`Start-DonBee-Subtitle-Studio.bat`** in the project folder. It starts the local service and opens your browser:
 
-[Open Dongbi Subtitle Studio](http://127.0.0.1:8765/v2/)
+[Open DonBee Subtitle Studio](http://127.0.0.1:8765/v2/)
 
 To have an AI operate it, ask the agent to read [AGENTS.md](AGENTS.md) and the [operator skill](.agents/skills/subtitle-studio/SKILL.md), then provide the URL, ranges, output folder and permission for any paid or remote processing. The CLI can run a saved workflow plan in one command; see the [API / CLI guide](guides/API_CLI.md).

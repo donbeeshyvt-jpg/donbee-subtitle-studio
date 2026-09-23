@@ -6,7 +6,7 @@ import subprocess
 
 ROOT_FILES = {".gitignore", ".env.example", "README.md", "README.en.md", "AGENTS.md",
               "THIRD_PARTY_NOTICES.md", "requirements.lock", "requirements-studio.txt",
-              "models.manifest.json", "run_v2.bat"}
+              "models.manifest.json", "Start-DonBee-Subtitle-Studio.bat"}
 SCRIPT_FILES = {"scripts/check-public-release.py", "scripts/import-local-models.py",
                 "scripts/git-hooks/pre-commit", "scripts/git-hooks/pre-commit.ps1"}
 SECRET = re.compile(rb"(?:sk-or-v1-[a-zA-Z0-9]{24,}|gh[pousr]_[a-zA-Z0-9]{30,}|"

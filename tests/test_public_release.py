@@ -22,7 +22,7 @@ def test_reject_private_files_even_when_force_added():
 
 def test_allow_runtime_and_public_instructions():
     check = checker()
-    for name in ["src/app/studio/api.py", "bootstrap/run.py", "frontend/dist/assets/index.js",
+    for name in ["Start-DonBee-Subtitle-Studio.bat", "src/app/studio/api.py", "bootstrap/run.py", "frontend/dist/assets/index.js",
                  "README.md", "guides/API_CLI.md", ".agents/skills/subtitle-studio/SKILL.md",
                  "src/app/vendor/vibevoice/LICENSE", "tests/test_public_release.py"]:
         assert not check.inspect_file(name, b"ordinary text"), name

@@ -1,4 +1,4 @@
-# Donbee Subtitle Studio｜冬比字幕工作室
+# DonBee Subtitle Studio｜冬比字幕工作室
 
 [English](README.en.md) · [安裝與模型設定](guides/SETUP.md) · [API／CLI 手冊](guides/API_CLI.md)
 
@@ -51,7 +51,7 @@
 
 ## 最後，怎麼一鍵調用？
 
-完成首次準備後，在專案資料夾雙擊 **`run_v2.bat`**。它會啟動本機服務並開啟瀏覽器：
+完成首次準備後，在專案資料夾雙擊 **`Start-DonBee-Subtitle-Studio.bat`**。它會啟動本機服務並開啟瀏覽器：
 
 [開啟冬比字幕工作室](http://127.0.0.1:8765/v2/)
 

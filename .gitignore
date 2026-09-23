@@ -13,7 +13,7 @@
 !/requirements.lock
 !/requirements-studio.txt
 !/models.manifest.json
-!/run_v2.bat
+!/Start-DonBee-Subtitle-Studio.bat
 !/scripts/
 /scripts/*
 !/scripts/check-public-release.py

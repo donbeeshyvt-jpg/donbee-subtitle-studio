@@ -264,7 +264,7 @@ def test_defaults_follow_official_docs_checked_2026_09_16():
     assert by_id['api-openrouter']['model'] == 'deepseek/deepseek-v4.1-flash' and by_id['api-openrouter']['response_format_mode'] == 'json_schema'
     assert by_id['local-llamacpp']['base_url'] == 'http://127.0.0.1:8080/v1'
     headers = _settings({**by_id['api-openrouter'], 'allow_remote': True}, secret='sk-or-test')['headers']
-    assert headers['X-OpenRouter-Title'] == 'Dongbi Subtitle Studio' and headers['X-Title'] == 'Dongbi Subtitle Studio'
+    assert headers['X-OpenRouter-Title'] == 'DonBee Subtitle Studio' and headers['X-Title'] == 'DonBee Subtitle Studio'
     assert headers['Authorization'] == 'Bearer sk-or-test'
     other = dict(id='custom', base_url='https://api.example.com', model='m', allow_remote=True)
     assert 'X-OpenRouter-Title' not in _settings(other, secret='sk-test')['headers']  # 只有 OpenRouter 帶應用識別標頭

@@ -12,10 +12,10 @@
 python -m bootstrap
 python -m venv .venv-download
 .\.venv-download\Scripts\python.exe -m pip install "yt-dlp[default]"
-.\run_v2.bat
+.\Start-DonBee-Subtitle-Studio.bat
 ```
 
-下載器是獨立環境。`run_v2.bat` 會自動找到 `.venv-download`；自行啟動 API 時請設定 `STUDIO_YTDLP_PYTHON`。第一次可能需要連網安裝或取得模型，不是解壓後完全離線可用。
+下載器是獨立環境。`Start-DonBee-Subtitle-Studio.bat` 會自動找到 `.venv-download`；自行啟動 API 時請設定 `STUDIO_YTDLP_PYTHON`。第一次可能需要連網安裝或取得模型，不是解壓後完全離線可用。
 
 想先看缺什麼：`python -m bootstrap --check-only --json`。它不安裝套件，但會把環境報告存到本機 `data/`。
 

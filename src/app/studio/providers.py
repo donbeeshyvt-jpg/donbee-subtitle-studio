@@ -154,7 +154,7 @@ def _settings(config,secret=None):
     headers = {} if elevenlabs else {'Content-Type':'application/json'}
     if 'openrouter.ai' in url:
         # OpenRouter 選用的應用識別標頭（官網 2026-09-16：X-OpenRouter-Title；X-Title 為舊名，同時送）
-        headers['X-OpenRouter-Title'] = headers['X-Title'] = 'Dongbi Subtitle Studio'
+        headers['X-OpenRouter-Title'] = headers['X-Title'] = 'DonBee Subtitle Studio'
     if 'api_key' in config:
         raise ProviderError('USE_API_KEY_ENV')
     key = None

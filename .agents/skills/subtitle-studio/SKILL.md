@@ -1,15 +1,17 @@
 ---
 name: subtitle-studio
-description: 操作冬比字幕工作室（Dongbi Subtitle Studio）的本機 API／CLI。使用者要求在此程式下載 YouTube 指定區段、匯入影音、轉錄字幕、用自己的 AI 校字、預覽或匯出 SRT、分段／合併影音、查看或取消工作時使用。不適用於一般字幕翻譯、燒錄字幕或修改程式本身。
+description: 操作冬比字幕工作室（DonBee Subtitle Studio）的本機 API／CLI。使用者要求在此程式下載 YouTube 指定區段、匯入影音、轉錄字幕、用自己的 AI 校字、預覽或匯出 SRT、分段／合併影音、查看或取消工作時使用。不適用於一般字幕翻譯、燒錄字幕或修改程式本身。
 ---
 
-# 冬比字幕工作室操作技能
+# DonBee Subtitle Studio｜冬比字幕工作室操作技能
 
 ## 入口與安全
 
-技能隨專案提供。由本檔向上三層為專案根目錄；確認根目錄同時有 `run_v2.bat`、`src/app/studio/cli.py`。所有命令在該根目錄執行，不依賴固定磁碟代號。
+技能隨專案提供。由本檔向上三層為專案根目錄；確認根目錄同時有 `Start-DonBee-Subtitle-Studio.bat`、`src/app/studio/cli.py`。所有命令在該根目錄執行，不依賴固定磁碟代號。
 
 先讀根目錄 [AGENTS.md](../../../AGENTS.md)，再完整讀 [API／CLI 手冊](../../../guides/API_CLI.md)。未安裝時讀 [SETUP](../../../guides/SETUP.md)。只操作軟體不必讀私有 `docs/`，也不要求它存在。
+
+英文品牌固定寫 **DonBee Subtitle Studio**。如果使用者要修改程式而非操作字幕流程，改讀 [公開開發指南與程式地圖](../../../guides/CODE_MAP.md)，不要要求取得私人開發紀錄，也不要用本技能代替工程測試。
 
 - 確認素材、時間範圍、輸出位置和任務目標。未指定範圍不要擅自下載整片。
 - 遠端 API、付費處理、傳送音訊／字幕／參考文字、大型模型下載，須先有使用者明確同意。缺金鑰時請使用者用設定頁輸入，不要求貼在對話裡。
@@ -39,6 +41,6 @@ description: 操作冬比字幕工作室（Dongbi Subtitle Studio）的本機 AP
 
 ## 一鍵與能力邊界
 
-日常 UI 啟動：`run_v2.bat`。已建立 plan 一次跑完：`python -m app plan run PLAN_ID --wait --json`。現行 plan 不包含完整校字步驟，也不接受直接 analyze 的全部欄位；依手冊走分階段串接，不能憑空新增參數。
+日常 UI 啟動：`Start-DonBee-Subtitle-Studio.bat`。已建立 plan 一次跑完：`python -m app plan run PLAN_ID --wait --json`。現行 plan 不包含完整校字步驟，也不接受直接 analyze 的全部欄位；依手冊走分階段串接，不能憑空新增參數。
 
 CLI `export` 不支援 `--output-root`；使用 artifact `--out`，或 API 的 `output_root_id`。進階呼叫先看 `--help`／OpenAPI，不直接呼叫私有 Python worker。

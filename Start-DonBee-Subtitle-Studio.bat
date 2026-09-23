@@ -1,4 +1,5 @@
 @echo off
+rem DonBee Subtitle Studio launcher
 setlocal
 cd /d "%~dp0"
 set "PYTHONDONTWRITEBYTECODE=1"

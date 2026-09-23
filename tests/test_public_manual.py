@@ -3,11 +3,41 @@ import json
 from pathlib import Path
 import re
 import shlex
+import os
+import subprocess
+import shutil
+import sys
+import pytest
 
 from app.studio.cli import _parser
 from app.studio.contracts import JobRequest, WorkflowRequest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows 批次啟動器')
+def test_named_launcher_preserves_project_root_and_serve_arguments(tmp_path):
+    launcher = ROOT / 'Start-DonBee-Subtitle-Studio.bat'
+    assert launcher.is_file()
+    assert not (ROOT / 'run_v2.bat').exists()
+    # 以替身直譯器攔截，不啟動服務、不安裝依賴或載入使用者模型。
+    project = tmp_path / 'project with spaces'
+    package = project / 'src/app'
+    package.mkdir(parents=True)
+    (package / '__init__.py').write_text('', encoding='utf-8')
+    capture = tmp_path / 'launch.json'
+    (package / '__main__.py').write_text(
+        'import json, os, sys\nfrom pathlib import Path\n'
+        'Path(os.environ["LAUNCH_CAPTURE"]).write_text(json.dumps([os.getcwd(), sys.argv[1:], os.environ["PYTHONPATH"]]), encoding="utf-8")\n',
+        encoding='utf-8')
+    copied = project / launcher.name
+    shutil.copyfile(launcher, copied)
+    env = dict(os.environ, STUDIO_MODEL_PYTHON=sys.executable, LAUNCH_CAPTURE=str(capture))
+    subprocess.run(['cmd.exe', '/d', '/c', str(copied)], cwd=tmp_path, env=env, check=True, timeout=15)
+    cwd, argv, pythonpath = json.loads(capture.read_text(encoding='utf-8'))
+    assert Path(cwd) == project
+    assert argv == ['serve', '--host', '127.0.0.1', '--port', '8765', '--open-browser']
+    assert Path(pythonpath) == project / 'src'
 
 
 def test_manual_cli_examples_parse():
