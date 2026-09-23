@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>字幕工作室 Subtitle Studio</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand">
+      <svg class="logo" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <rect x="2" y="4" width="20" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="6" y1="15" x2="13" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="15" y1="15" x2="18" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      字幕工作室
+    </h1>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="功能分頁">
+    <button class="tab active" data-tab="download" role="tab" aria-selected="true">1 · 下載</button>
+    <button class="tab" data-tab="edit" role="tab" aria-selected="false">2 · 編輯與字幕</button>
+  </nav>
+
+  <main class="layout">
+    <!-- ===== 分頁 1：下載 ===== -->
+    <section id="tab-download" class="tabpanel" role="tabpanel">
+      <div class="open-row">
+        <input id="url" type="text" class="input" placeholder="貼上 YouTube 網址" aria-label="YouTube 網址">
+        <button id="dlBtn" class="btn btn-primary">下載</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="downloadOnly"> 純下載（只存影片，不接著轉字幕）</label>
+      <div id="dlProgressWrap" class="progress" hidden aria-hidden="true">
+        <div id="dlProgress" class="progress-bar" style="width:0%"></div>
+      </div>
+      <div id="dlStatus" class="status" role="status" aria-live="polite">貼上 YouTube 網址後按「下載」。影片會存到 downloads 資料夾。</div>
+    </section>
+
+    <!-- ===== 分頁 2：編輯與字幕 ===== -->
+    <section id="tab-edit" class="tabpanel" role="tabpanel" hidden>
+      <div class="open-row">
+        <button id="pickBtn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          選擇影片／音檔…
+        </button>
+        <input id="fileInput" type="file" accept="video/*,audio/*" hidden>
+        <input id="path" type="text" class="input" placeholder="或貼上本機檔案完整路徑" aria-label="本機檔案路徑">
+        <button id="openBtn" class="btn">用路徑載入</button>
+      </div>
+
+      <section id="player" hidden>
+        <video id="video" class="video" controls preload="auto"></video>
+        <div id="waveform" class="waveform" aria-label="音訊波形，可拖曳建立字幕區段；拖區段中間可移動，拖邊緣可縮放"></div>
+        <div id="timeline" class="timeline"></div>
+
+        <div class="toolbar">
+          <div class="toolbar-row">
+            <div class="fieldgroup">
+              <span class="group-label">區段</span>
+              <div class="group-body">
+                <input id="regStart" class="num" type="number" min="0" step="0.1" placeholder="開始秒" aria-label="區段開始秒數">
+                <span class="dash">–</span>
+                <input id="regEnd" class="num" type="number" min="0" step="0.1" placeholder="結束秒" aria-label="區段結束秒數">
+                <button id="addRegion" class="btn">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  新增區段
+                </button>
+                <button id="clearRegions" class="btn btn-ghost">清除全部</button>
+              </div>
+            </div>
+            <div class="grow"></div>
+            <button id="genBtn" class="btn btn-primary btn-cta">
+              <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="7" y1="14" x2="11" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="13" y1="14" x2="17" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              產生字幕
+            </button>
+          </div>
+
+          <ul id="regionList" class="region-list" aria-label="已選區段（按 ✕ 可單獨刪除）"></ul>
+
+          <div class="toolbar-sep"></div>
+
+          <div class="toolbar-row">
+            <div class="fieldgroup">
+              <span class="group-label">辨識設定</span>
+              <div class="group-body">
+                <label class="field">引擎
+                  <select id="engine" class="select" aria-label="辨識引擎">
+                    <option value="whisperx">WhisperX（快、預設）</option>
+                    <option value="hybrid">VibeVoice 混合（最佳文字、慢）</option>
+                  </select>
+                </label>
+                <label class="field" id="modelWrap">模型
+                  <select id="model" class="select" aria-label="WhisperX 模型">
+                    <option value="large-v3">large-v3（最準）</option>
+                    <option value="large-v3-turbo">turbo（更快）</option>
+                  </select>
+                </label>
+                <label class="field">字幕
+                  <select id="srtMode" class="select" aria-label="字幕分句模式">
+                    <option value="natural">自然分句（2~3 句）</option>
+                    <option value="oneline">一句一行（去標點留 !?）</option>
+                  </select>
+                </label>
+                <label class="chk"><input type="checkbox" id="showLang" checked> 顯示語言標籤</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="status" class="status" role="status" aria-live="polite">請先載入媒體（下載分頁下載，或在此輸入本機路徑）。</section>
+    </section>
+  </main>
+
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

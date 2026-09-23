@@ -1,0 +1,118 @@
+/* 字幕工作室 UI — 依 ui-ux-pro-max 準則：高對比(>=4.5:1)、focus-visible、cursor-pointer、RWD、reduced-motion。 */
+:root {
+  --bg: #0f1420;
+  --panel: #1a2130;
+  --panel-2: #232c40;
+  --text: #eef2fb;          /* 對 --bg 對比 > 14:1 */
+  --muted: #aab4cc;         /* 對 --bg 對比 > 6:1 */
+  --accent: #5b8cff;
+  --accent-strong: #2b5fd6;
+  --ok: #46d29a;
+  --border: #34405c;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* 讓 hidden 屬性勝過 .tabpanel/.progress 的 display */
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Noto Sans TC", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.topbar { padding: 14px 22px; border-bottom: 1px solid var(--border); background: var(--panel); }
+.brand { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 19px; font-weight: 700; }
+.logo { color: var(--accent); }
+
+.layout { max-width: 1100px; margin: 0 auto; padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+
+.open-row { display: flex; gap: 10px; }
+.input {
+  flex: 1; padding: 11px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 15px;
+}
+.input::placeholder { color: var(--muted); }
+.input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  font-size: 15px; cursor: pointer; transition: background .15s ease, transform .05s ease;
+}
+.btn:hover { background: #2c3650; }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); font-weight: 600; }
+.btn-primary:hover { background: var(--accent); }
+.btn-ghost { background: transparent; }
+
+.video { width: 100%; max-height: 46vh; background: #000; border-radius: var(--radius); }
+.waveform { margin-top: 12px; background: var(--panel); border-radius: var(--radius); padding: 6px; min-height: 96px; }
+.timeline { margin-top: 4px; }
+
+/* 編輯分頁工具列：分組 + 視覺層級（product register：可預期、克制、一致狀態） */
+.toolbar { margin-top: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+.toolbar-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; }
+.toolbar-sep { height: 1px; background: var(--border); }
+.fieldgroup { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.group-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.group-body { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.field { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+.grow { flex: 1 1 auto; }
+.btn-cta { font-size: 15px; padding: 11px 22px; }
+.chk { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; }
+.select { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); cursor: pointer; }
+.select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.num { width: 82px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 13px; }
+.num::placeholder { color: var(--muted); }
+.num:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dash { color: var(--muted); }
+
+.region-list { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.region-list li { display: inline-flex; align-items: center; gap: 8px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13px; }
+
+/* 分頁 */
+.tabs { display: flex; gap: 4px; max-width: 1100px; margin: 0 auto; padding: 12px 22px 0; }
+.tab { padding: 9px 18px; border: 1px solid var(--border); border-bottom: none; border-radius: 10px 10px 0 0; background: var(--panel); color: var(--muted); font-size: 15px; cursor: pointer; }
+.tab.active { background: var(--panel-2); color: var(--text); font-weight: 600; }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tabpanel { display: flex; flex-direction: column; gap: 14px; }
+
+/* 下載進度條 */
+.progress { width: 100%; height: 10px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width .3s ease; }
+
+/* 區段單獨刪除 ✕（清單上的小按鈕） */
+.btn-x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: none; border-radius: 50%; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.btn-x:hover { background: #c0394b; color: #fff; }
+.btn-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* 波形上區段「正中央」的 ✕ 徽章（絕對置中於區段方塊） */
+.region-x {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(15, 20, 32, .78); color: #fff; font-size: 13px; line-height: 1;
+  cursor: pointer; user-select: none; z-index: 5;
+  transition: background .12s ease, transform .12s ease, box-shadow .12s ease;
+}
+.region-x:hover {                       /* 滑鼠移過：明顯變亮 + 微放大 + 光暈 */
+  background: #ff5a6e; transform: translate(-50%, -50%) scale(1.18);
+  box-shadow: 0 0 0 3px rgba(255, 90, 110, .35);
+}
+
+.status { padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); min-height: 20px; }
+
+@media (max-width: 640px) {
+  .layout { padding: 14px; }
+  .open-row { flex-direction: column; }
+  .toolbar-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .grow { display: none; }
+  .btn-cta { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}

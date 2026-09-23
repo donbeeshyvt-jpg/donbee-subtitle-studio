@@ -1,0 +1,4 @@
+node_modules/
+# dist 是使用者啟動時需要的網頁打包，隨公開程式一起提交。
+*.tsbuildinfo
+test-artifacts/

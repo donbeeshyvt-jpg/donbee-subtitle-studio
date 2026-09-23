@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "note": "專案內模型清單；程式以 config.MODELS_DIR 解析。required=true 為必備，false 為選用（啟用對應引擎時才複製或下載）。revision 由匯入或下載時記錄於 models/IMPORTED.json。 ct2＝從官方 Hugging Face repo 只下載 safetensors 與設定／詞彙檔，在本機轉成 CTranslate2 float16 放 models/ct2/<key>/（轉完刪除原始權重）。",
+  "hf": [
+    {
+      "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+      "required": true,
+      "used_by": [
+        "draft ASR (turbo)"
+      ],
+      "license": "MIT",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    },
+    {
+      "repo": "Systran/faster-whisper-large-v3",
+      "required": true,
+      "used_by": [
+        "refine engine A (large-v3)"
+      ],
+      "license": "MIT",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    },
+    {
+      "repo": "jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn",
+      "required": true,
+      "used_by": [
+        "alignment zh"
+      ],
+      "license": "Apache-2.0",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    },
+    {
+      "repo": "jonatasgrosman/wav2vec2-large-xlsr-53-japanese",
+      "required": true,
+      "used_by": [
+        "alignment ja"
+      ],
+      "license": "Apache-2.0",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    },
+    {
+      "repo": "MIT/ast-finetuned-audioset-10-10-0.4593",
+      "required": true,
+      "used_by": [
+        "music classification"
+      ],
+      "license": "BSD-3-Clause",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    },
+    {
+      "repo": "microsoft/VibeVoice-ASR",
+      "required": false,
+      "enable_when": "engine_b",
+      "used_by": [
+        "refine engine B (VibeVoice)"
+      ],
+      "license": "MIT",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    },
+    {
+      "repo": "Qwen/Qwen3-ASR-1.7B",
+      "revision": "7278e1e70fe206f11671096ffdd38061171dd6e5",
+      "required": false,
+      "enable_when": "asr_model",
+      "used_by": [
+        "refine ASR model (Qwen3-ASR, optional)"
+      ],
+      "expected_bytes": 4703114308,
+      "asr": {
+        "key": "qwen3-asr-1.7b",
+        "label": "Qwen3-ASR-1.7B（多語、中文強）",
+        "runner": "qwen",
+        "languages": null,
+        "timestamps": false,
+        "license": "Apache-2.0",
+        "download_bytes": 4703114308,
+        "note": "2026-09-20 使用者要求試用；qwen-asr 套件裝在 .venv-qwen-asr（--no-deps），子程序執行；只換文字"
+      },
+      "license": "Apache-2.0",
+      "license_checked": "2026-09-21 huggingface.co/api/models"
+    }
+  ],
+  "torch": [
+    {
+      "file": "hub/checkpoints/wav2vec2_fairseq_base_ls960_asr_ls960.pth",
+      "required": true,
+      "used_by": [
+        "alignment en (torchaudio pipeline)"
+      ]
+    }
+  ],
+  "gguf": [
+    {
+      "dir": "Qwen2.5-1.5B-Instruct-GGUF",
+      "required": false,
+      "used_by": [
+        "llama.cpp / LM Studio small model"
+      ]
+    },
+    {
+      "dir": "Qwen2.5-3B-Instruct-GGUF",
+      "required": false,
+      "used_by": [
+        "evaluation only (Qwen research license)"
+      ]
+    }
+  ],
+  "ct2": [
+    {
+      "key": "breeze-asr-25",
+      "repo": "MediaTek-Research/Breeze-ASR-25",
+      "revision": "cffe7ccb404d025296a00758d0a33468bec3a9d0",
+      "required": false,
+      "enable_when": "asr_model",
+      "label": "Breeze-ASR-25（台灣華語、中英夾雜）",
+      "languages": [
+        "zh"
+      ],
+      "license": "Apache-2.0",
+      "base": "openai/whisper-large-v2",
+      "download_bytes": 3092400389,
+      "converted_bytes_approx": 3090000000,
+      "used_by": [
+        "refine ASR model (optional)"
+      ],
+      "note": "2026-09-20 使用者要求再試（先前依使用者決定排除）；時間戳能力以實測為準"
+    }
+  ]
+}

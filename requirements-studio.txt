@@ -1,0 +1,8 @@
+# v2 HTTP／CLI 核心；ASR 沿用設定的模型環境，不在此安裝 torch。
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+pydantic>=2.9,<3
+python-multipart>=0.0.18,<1
+httpx>=0.27,<1
+json5>=0.9,<1
+psutil>=6,<8

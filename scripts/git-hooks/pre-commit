@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# 公開版本只提交程式及使用文件；不能為同步索引而夾帶本機開發紀錄。
+set -e
+if [ -x .venv/Scripts/python.exe ]; then
+  exec .venv/Scripts/python.exe scripts/check-public-release.py --require-code-map
+elif [ -x .venv/bin/python ]; then
+  exec .venv/bin/python scripts/check-public-release.py --require-code-map
+else
+  exec python scripts/check-public-release.py --require-code-map
+fi

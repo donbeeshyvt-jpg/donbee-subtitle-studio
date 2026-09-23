@@ -1,0 +1,64 @@
+/*
+!/.gitignore
+!/.env.example
+!/README.md
+!/README.en.md
+!/AGENTS.md
+!/THIRD_PARTY_NOTICES.md
+!/src/
+!/bootstrap/
+!/frontend/
+!/tests/
+!/guides/
+!/requirements.lock
+!/requirements-studio.txt
+!/models.manifest.json
+!/run_v2.bat
+!/scripts/
+/scripts/*
+!/scripts/check-public-release.py
+!/scripts/git-hooks/
+!/scripts/import-local-models.py
+!/.agents/
+/.agents/*
+!/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/subtitle-studio/
+!/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/public-checks.yml
+.env
+.env.*
+!/.env.example
+node_modules/
+# frontend/dist 隨包入版控（Q8）；其他 dist 目錄不另忽略
+*.log
+.venv/
+.venv-download/
+__pycache__/
+.pytest_cache/
+*.tsbuildinfo
+artifacts/
+# 模型權重與匯入紀錄不入版控；models/README.md 與 models.manifest.json 保留
+models/hf/
+models/torch/
+models/gguf/
+models/ct2/
+models/IMPORTED.json
+# 使用者資料（設定、金鑰、SQLite、工作成果）
+data/
+frontend/test-artifacts/
+
+# 本機暫存（C: 滿時測試與子程序改用 D:，2026-09-20）
+.cache/
+# Qwen3-ASR 套件疊加目錄（LOCAL_MODEL_SETUP.md）
+.venv-qwen-asr/
+
+# 本機驗證紀錄及兩份依賴私有文件的檢查不公開；原檔仍在本機。
+frontend/TEST_REPORT.md
+/tests/test_studio_output_matrix.py
+/tests/test_config_paths.py
+/tests/structural/
+*.py[cod]

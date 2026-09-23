@@ -1,0 +1,45 @@
+# requirements.lock — 啟動器（bootstrap）依此只補缺或修正版本；版本取自 2026-09-16 已驗證的模型環境。
+# 格式：每行 name==version；「# group: 名稱」切換群組；「-e 相對路徑」為可編輯安裝。
+# torch 系列不帶 +cu128／+cpu 後綴，由啟動器依 GPU 偵測補上並改用對應的 index-url。
+
+# group: core
+fastapi==0.138.1
+uvicorn==0.49.0
+pydantic==2.13.4
+python-multipart==0.0.32
+httpx==0.28.1
+psutil==7.2.2
+numpy==2.4.6
+scipy==1.18.0
+soundfile==0.14.0
+librosa==0.11.0
+opencc-python-reimplemented==0.1.7
+lingua-language-detector==2.2.0
+
+# group: models
+torch==2.11.0
+torchaudio==2.11.0
+torchvision==0.26.0
+transformers==4.57.6
+tokenizers==0.22.2
+safetensors==0.8.0
+accelerate==1.14.0
+faster-whisper==1.2.1
+ctranslate2==4.8.0
+whisperx==3.8.6
+onnxruntime==1.27.0
+pyannote-audio==4.0.5
+torchcodec==0.7.0
+nltk==3.9.4
+pandas==3.0.3
+
+# group: engine_b
+bitsandbytes==0.49.2
+-e ./docs/VibeVoice-main
+
+# group: dev
+pytest==9.1.1
+playwright==1.61.0
+
+# group: v1
+pywebview==6.2.1
